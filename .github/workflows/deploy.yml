@@ -1,0 +1,122 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'app/**'
+      - 'config/**'
+      - 'database/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'tests/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_mysql, redis
+          tools: composer:latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-dev --no-progress --no-interaction
+          npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Run tests before deployment
+        run: php artisan test --parallel
+
+      - name: Check code style
+        run: php artisan pint --test
+        continue-on-error: true
+
+      - name: Prepare deployment files
+        run: |
+          mkdir -p deployment
+          cp -r app bootstrap config database public resources routes storage vendor deployment/
+          cp artisan deployment/
+
+      - name: Generate cache files
+        run: |
+          cd deployment
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Create deployment package
+        run: |
+          cd deployment
+          tar -czf ../toeic-platform-${{ github.sha }}.tar.gz .
+          cd ..
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-${{ github.sha }}
+          path: toeic-platform-${{ github.sha }}.tar.gz
+          retention-days: 30
+
+      - name: Notify deployment status
+        if: always()
+        run: echo "Deployment package prepared for commit ${{ github.sha }}"
+
+      # Uncomment and configure these steps when ready to deploy to actual server
+      # - name: Deploy to server
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.SERVER_USER }}
+      #     key: ${{ secrets.SERVER_SSH_KEY }}
+      #     port: ${{ secrets.SERVER_PORT }}
+      #     script: |
+      #       cd /home/deploy/laravel-toeic
+      #       ./deploy.sh ${{ github.sha }}
+
+      # - name: Slack notification
+      #   if: always()
+      #   uses: slackapi/slack-github-action@v1
+      #   with:
+      #     payload: |
+      #       {
+      #         "text": "Deployment ${{ job.status }}: Laravel TOEIC Platform",
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "*Deployment Status*\nCommit: ${{ github.sha }}\nStatus: ${{ job.status }}"
+      #             }
+      #           }
+      #         ]
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

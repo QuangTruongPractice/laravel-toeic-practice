@@ -1,0 +1,68 @@
+# Supervisor Configuration for Laravel Queue Workers
+# Copy to /etc/supervisor/conf.d/toeic-queue.conf
+
+[program:toeic-queue]
+# Program name (used in supervisorctl commands)
+process_name=%(program_name)s_%(process_num)02d
+
+# Command to run the queue worker
+# Using Redis driver, 3 second sleep between jobs, 3 retries, 90 second timeout
+command=php /home/deploy/laravel-toeic/artisan queue:work redis --sleep=3 --tries=3 --timeout=90
+
+# Autostart when Supervisor starts
+autostart=true
+
+# Autorestart if the process crashes
+autorestart=true
+
+# Stop child processes and process group
+stopasgroup=true
+killasgroup=true
+
+# User to run the process as
+user=deploy
+
+# Number of worker processes to spawn
+numprocs=4
+
+# Redirect stderr to stdout
+redirect_stderr=true
+
+# Log file location
+stdout_logfile=/var/log/toeic-queue.log
+
+# Maximum log file size (rotate when reaching this)
+stdout_logfile_maxbytes=10MB
+
+# Number of backup log files to keep
+stdout_logfile_backups=10
+
+# Stop timeout in seconds
+stopwait=3600
+
+# Environment variables (optional)
+# environment=LARAVEL_ENV=production
+
+# Priority for startup/shutdown (lower numbers = earlier start/later stop)
+priority=999
+
+
+# Optional: Supervisor Event Listener for monitoring
+# Uncomment to enable email notifications on process state changes
+# [eventlistener:toeic-event-listener]
+# command=php -r "echo 'Listening for queue events...'; sleep(86400);"
+# buffer_size=100
+# events=PROCESS_STATE,TICK_60
+# result_handler=toeic-result-handler
+
+
+# Optional: Result handler for event notifications
+# [unix_http_server]
+# file=/tmp/supervisor.sock
+
+# [supervisorctl]
+# serverurl=unix:///tmp/supervisor.sock
+
+# [supervisord]
+# logfile=/var/log/supervisord.log
+# pidfile=/var/run/supervisord.pid
