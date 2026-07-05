@@ -52,6 +52,12 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Copy environment file
+        run: cp .env.example .env
+
+      - name: Generate app key
+        run: php artisan key:generate
+
       - name: Run tests before deployment
         run: php artisan test --parallel
 
