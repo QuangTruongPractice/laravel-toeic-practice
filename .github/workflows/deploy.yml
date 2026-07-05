@@ -72,7 +72,7 @@ jobs:
         run: |
           mkdir -p deployment
           cp -r app bootstrap config database public resources routes storage vendor deployment/
-          cp artisan deployment/
+          cp artisan composer.json composer.lock deployment/
 
       - name: Generate cache files
         run: |
