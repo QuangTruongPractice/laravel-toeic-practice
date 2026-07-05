@@ -2,11 +2,11 @@
 
 namespace App\Http\View\Composers;
 
-use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use App\Models\ExamAttempt;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class DashboardComposer
 {
@@ -16,7 +16,7 @@ class DashboardComposer
     public function compose(View $view): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -36,7 +36,7 @@ class DashboardComposer
 
         $dashboard = json_decode($dashboardJson);
 
-        if (!is_object($dashboard) || json_last_error() !== JSON_ERROR_NONE) {
+        if (! is_object($dashboard) || json_last_error() !== JSON_ERROR_NONE) {
             $dashboard = json_decode(json_encode($this->buildDashboardData($user)));
             Cache::put($cacheKey, json_encode($dashboard), now()->addMinutes(10));
         }
@@ -64,8 +64,8 @@ class DashboardComposer
         $totalTimeSeconds = $completedAttempts->sum('time_spent_seconds');
         $totalHours = floor($totalTimeSeconds / 3600);
         $totalMinutes = floor(($totalTimeSeconds % 3600) / 60);
-        $formattedTotalTime = $totalHours > 0 
-            ? "{$totalHours}h {$totalMinutes}m" 
+        $formattedTotalTime = $totalHours > 0
+            ? "{$totalHours}h {$totalMinutes}m"
             : "{$totalMinutes}m";
 
         // Chart history (limit to last 10 completed attempts for progression chart)
@@ -102,7 +102,7 @@ class DashboardComposer
                     'part_name' => $part->part_name,
                     'total_answers' => $part->total_answers,
                     'correct_answers' => $part->correct_answers,
-                    'correct_rate' => $part->total_answers > 0 
+                    'correct_rate' => $part->total_answers > 0
                         ? round(($part->correct_answers / $part->total_answers) * 100, 1)
                         : 0,
                 ];
@@ -112,8 +112,8 @@ class DashboardComposer
         $strongestPart = null;
         $weakestPart = null;
 
-        if (!empty($partsPerformance)) {
-            $attemptedParts = collect($partsPerformance)->filter(fn($part) => $part->total_answers > 0);
+        if (! empty($partsPerformance)) {
+            $attemptedParts = collect($partsPerformance)->filter(fn ($part) => $part->total_answers > 0);
 
             if ($attemptedParts->isNotEmpty()) {
                 $strongestPart = (object) $attemptedParts->sortByDesc('correct_rate')->first();

@@ -1,18 +1,19 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ExamController as AdminExamController;
 use App\Http\Controllers\Admin\ImportController as AdminImportController;
 use App\Http\Controllers\Admin\QuestionController;
-use App\Http\Controllers\PracticeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController as UserExamController;
+use App\Http\Controllers\PracticeController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -44,7 +45,7 @@ Route::middleware('auth')->prefix('exams')->name('exams.')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('exams', AdminExamController::class);
     Route::resource('imports', AdminImportController::class);
-    
+
     // Quản lý câu hỏi theo đề thi (Phương án A)
     Route::get('exams/{exam}/questions', [QuestionController::class, 'index'])->name('exams.questions.index');
     Route::get('exams/{exam}/parts/{part}/question-groups/create', [QuestionController::class, 'create'])->name('exams.question-groups.create');

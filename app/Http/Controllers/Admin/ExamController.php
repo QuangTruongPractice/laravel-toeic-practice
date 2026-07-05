@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ExamController extends Controller
@@ -16,6 +15,7 @@ class ExamController extends Controller
     public function index()
     {
         $exams = Exam::all();
+
         return view('admin.exams.index', compact('exams'));
     }
 
@@ -42,7 +42,7 @@ class ExamController extends Controller
         ]);
 
         if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['title']) . '-' . uniqid();
+            $data['slug'] = Str::slug($data['title']).'-'.uniqid();
         }
 
         Exam::create($data);
@@ -74,7 +74,7 @@ class ExamController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:exams,slug,' . $exam->id,
+            'slug' => 'required|string|max:255|unique:exams,slug,'.$exam->id,
             'description' => 'nullable|string',
             'year' => 'required|integer|min:1900|max:2100',
             'duration_minutes' => 'required|integer|min:1',

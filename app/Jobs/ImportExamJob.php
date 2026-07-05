@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
-use App\Models\Import;
-use App\Models\Exam;
-use App\Models\Part;
-use App\Models\QuestionGroup;
-use App\Models\Question;
 use App\Models\Answer;
+use App\Models\Exam;
+use App\Models\Import;
+use App\Models\Part;
+use App\Models\Question;
+use App\Models\QuestionGroup;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,7 +15,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ImportExamJob implements ShouldQueue
@@ -23,9 +22,13 @@ class ImportExamJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $importId;
+
     protected $testNum;
+
     protected $jsonPath;
+
     protected $audioSourceDir;
+
     protected $imageSourceDir;
 
     /**
@@ -46,23 +49,24 @@ class ImportExamJob implements ShouldQueue
     public function handle(): void
     {
         $import = Import::find($this->importId);
-        if (!$import) {
+        if (! $import) {
             return;
         }
 
         $import->update(['status' => 'processing']);
 
-        if (!File::exists($this->jsonPath)) {
+        if (! File::exists($this->jsonPath)) {
             $import->update([
                 'status' => 'failed',
-                'error_log' => "JSON file not found at temporary path: {$this->jsonPath}"
+                'error_log' => "JSON file not found at temporary path: {$this->jsonPath}",
             ]);
+
             return;
         }
 
         try {
             $data = json_decode(File::get($this->jsonPath), true);
-            if (!$data || !isset($data['questions'])) {
+            if (! $data || ! isset($data['questions'])) {
                 throw new \Exception("Invalid JSON format or missing 'questions' array.");
             }
 
@@ -86,7 +90,7 @@ class ImportExamJob implements ShouldQueue
                     'description' => "ETS 2026 Practice Test {$this->testNum}",
                     'year' => 2026,
                     'status' => 'draft', // Draft status as requested by admin review flow
-                    'duration_minutes' => 120
+                    'duration_minutes' => 120,
                 ]
             );
 
@@ -95,7 +99,7 @@ class ImportExamJob implements ShouldQueue
 
             $parts = Part::all()->keyBy('part_number');
             if ($parts->isEmpty()) {
-                throw new \Exception("No parts found in the database. Please run database seeders first.");
+                throw new \Exception('No parts found in the database. Please run database seeders first.');
             }
 
             $groupedQuestions = $this->groupQuestions($questions);
@@ -109,13 +113,13 @@ class ImportExamJob implements ShouldQueue
                 $partNum = $groupData['part'];
                 $part = $parts->get($partNum);
 
-                if (!$part) {
+                if (! $part) {
                     throw new \Exception("Part {$partNum} not found in the database.");
                 }
 
                 // Copy Audio File if it exists
                 $dbAudioPath = null;
-                if (!empty($groupData['audio_file'])) {
+                if (! empty($groupData['audio_file'])) {
                     $audioFileName = basename($groupData['audio_file']);
                     $srcAudioPath = $this->findFileRecursive($this->audioSourceDir, $audioFileName);
                     if ($srcAudioPath && File::exists($srcAudioPath)) {
@@ -128,7 +132,7 @@ class ImportExamJob implements ShouldQueue
 
                 // Copy Image File if it exists
                 $dbImagePath = null;
-                if (!empty($groupData['image_file'])) {
+                if (! empty($groupData['image_file'])) {
                     $imageFileName = basename($groupData['image_file']);
                     $srcImagePath = $this->findFileRecursive($this->imageSourceDir, $imageFileName);
                     if ($srcImagePath && File::exists($srcImagePath)) {
@@ -178,13 +182,13 @@ class ImportExamJob implements ShouldQueue
 
             // Create status log message if there are missing files
             $logMessage = null;
-            if (!empty($missingAudios) || !empty($missingImages)) {
+            if (! empty($missingAudios) || ! empty($missingImages)) {
                 $logMessage = "Import completed but some files were missing:\n";
-                if (!empty($missingAudios)) {
-                    $logMessage .= "- Missing Audios (" . count($missingAudios) . "): " . implode(', ', array_slice($missingAudios, 0, 10)) . (count($missingAudios) > 10 ? '...' : '') . "\n";
+                if (! empty($missingAudios)) {
+                    $logMessage .= '- Missing Audios ('.count($missingAudios).'): '.implode(', ', array_slice($missingAudios, 0, 10)).(count($missingAudios) > 10 ? '...' : '')."\n";
                 }
-                if (!empty($missingImages)) {
-                    $logMessage .= "- Missing Images (" . count($missingImages) . "): " . implode(', ', array_slice($missingImages, 0, 10)) . (count($missingImages) > 10 ? '...' : '') . "\n";
+                if (! empty($missingImages)) {
+                    $logMessage .= '- Missing Images ('.count($missingImages).'): '.implode(', ', array_slice($missingImages, 0, 10)).(count($missingImages) > 10 ? '...' : '')."\n";
                 }
             }
 
@@ -193,7 +197,7 @@ class ImportExamJob implements ShouldQueue
                 'status' => 'completed',
                 'exam_id' => $exam->id,
                 'questions_created' => $totalQuestionsCreated,
-                'error_log' => $logMessage
+                'error_log' => $logMessage,
             ]);
 
             Exam::clearCacheById($exam->id);
@@ -206,7 +210,7 @@ class ImportExamJob implements ShouldQueue
             DB::rollBack();
             $import->update([
                 'status' => 'failed',
-                'error_log' => $e->getMessage() . "\n" . $e->getTraceAsString()
+                'error_log' => $e->getMessage()."\n".$e->getTraceAsString(),
             ]);
             // Clean up temporary uploads directory
             File::deleteDirectory(dirname($this->jsonPath));
@@ -225,8 +229,8 @@ class ImportExamJob implements ShouldQueue
         $grouped = [];
 
         foreach ($questions as $q) {
-            $part = (int)$q['part'];
-            $qNum = (int)$q['number'];
+            $part = (int) $q['part'];
+            $qNum = (int) $q['number'];
 
             $groupKey = null;
             $audioFile = $q['audio_filename'] ?? null;
@@ -239,8 +243,8 @@ class ImportExamJob implements ShouldQueue
             } elseif ($part === 2) {
                 $groupKey = "part2_{$qNum}";
             } elseif ($part === 3 || $part === 4) {
-                if (!empty($audioFile)) {
-                    $groupKey = "part34_" . md5(basename($audioFile));
+                if (! empty($audioFile)) {
+                    $groupKey = 'part34_'.md5(basename($audioFile));
                 } else {
                     $groupKey = "part34_manual_{$qNum}";
                 }
@@ -248,7 +252,7 @@ class ImportExamJob implements ShouldQueue
                 // Check for graphic images in Part 3 & 4 (use recursive search to handle subdirectories in ZIP)
                 $possibleImage = "part34_test{$this->testNum}_Q{$qNum}.png";
                 $possibleImageJpg = "part34_test{$this->testNum}_Q{$qNum}.jpg";
-                
+
                 if ($this->findFileRecursive($this->imageSourceDir, $possibleImage)) {
                     $imageFile = $possibleImage;
                 } elseif ($this->findFileRecursive($this->imageSourceDir, $possibleImageJpg)) {
@@ -257,7 +261,7 @@ class ImportExamJob implements ShouldQueue
             } elseif ($part === 5) {
                 $groupKey = "part5_{$qNum}";
             } elseif ($part === 6) {
-                $start = 131 + (int)(($qNum - 131) / 4) * 4;
+                $start = 131 + (int) (($qNum - 131) / 4) * 4;
                 $end = $start + 3;
                 $groupKey = "part6_{$start}_{$end}";
                 $possibleImage = "part6_test{$this->testNum}_Q{$start}-{$end}.png";
@@ -268,7 +272,7 @@ class ImportExamJob implements ShouldQueue
                 $ranges = [
                     [147, 148], [149, 150], [151, 152], [153, 154], [155, 157],
                     [158, 160], [161, 163], [164, 167], [168, 171], [172, 175],
-                    [176, 180], [181, 185], [186, 190], [191, 195], [196, 200]
+                    [176, 180], [181, 185], [186, 190], [191, 195], [196, 200],
                 ];
 
                 $start = null;
@@ -296,7 +300,7 @@ class ImportExamJob implements ShouldQueue
                 }
             }
 
-            if (!isset($grouped[$groupKey])) {
+            if (! isset($grouped[$groupKey])) {
                 $grouped[$groupKey] = [
                     'part' => $part,
                     'audio_file' => $audioFile,
@@ -306,7 +310,7 @@ class ImportExamJob implements ShouldQueue
                 ];
             }
 
-            if (!empty($imageFile) && empty($grouped[$groupKey]['image_file'])) {
+            if (! empty($imageFile) && empty($grouped[$groupKey]['image_file'])) {
                 $grouped[$groupKey]['image_file'] = $imageFile;
             }
 
@@ -321,12 +325,12 @@ class ImportExamJob implements ShouldQueue
      */
     private function findFileRecursive(string $dir, string $fileName): ?string
     {
-        if (!File::isDirectory($dir)) {
+        if (! File::isDirectory($dir)) {
             return null;
         }
 
         // Direct check
-        $directPath = $dir . DIRECTORY_SEPARATOR . $fileName;
+        $directPath = $dir.DIRECTORY_SEPARATOR.$fileName;
         if (File::exists($directPath)) {
             return $directPath;
         }

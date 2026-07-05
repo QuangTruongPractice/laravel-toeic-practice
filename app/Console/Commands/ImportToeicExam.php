@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Models\Answer;
 use App\Models\Exam;
 use App\Models\Part;
-use App\Models\QuestionGroup;
 use App\Models\Question;
-use App\Models\Answer;
+use App\Models\QuestionGroup;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -36,27 +36,29 @@ class ImportToeicExam extends Command
     public function handle()
     {
         $filePath = base_path($this->option('file'));
-        $testNum = (int)$this->option('test');
+        $testNum = (int) $this->option('test');
 
-        if (!File::exists($filePath)) {
+        if (! File::exists($filePath)) {
             $this->error("JSON file not found at: {$filePath}");
+
             return Command::FAILURE;
         }
 
         $this->info("Reading JSON from: {$filePath}...");
         $data = json_decode(File::get($filePath), true);
 
-        if (!$data || !isset($data['questions'])) {
+        if (! $data || ! isset($data['questions'])) {
             $this->error("Invalid JSON format or missing 'questions' array.");
+
             return Command::FAILURE;
         }
 
         $questions = $data['questions'];
-        $this->info("Found " . count($questions) . " questions in JSON.");
+        $this->info('Found '.count($questions).' questions in JSON.');
 
         // Resolve source paths
-        $sourceAudioDir = base_path("ETS-2026/AUDIO ETS 2026/Audio-3");
-        $sourceAssetsDir = base_path("parser-service/app/assets");
+        $sourceAudioDir = base_path('ETS-2026/AUDIO ETS 2026/Audio-3');
+        $sourceAssetsDir = base_path('parser-service/app/assets');
 
         // Target storage paths (within public storage)
         $targetAudioDir = storage_path("app/public/audios/test_{$testNum}");
@@ -66,7 +68,7 @@ class ImportToeicExam extends Command
         File::ensureDirectoryExists($targetAudioDir);
         File::ensureDirectoryExists($targetImageDir);
 
-        $this->info("Assets will be copied to:");
+        $this->info('Assets will be copied to:');
         $this->info("- Audios: {$targetAudioDir}");
         $this->info("- Images: {$targetImageDir}");
 
@@ -82,7 +84,7 @@ class ImportToeicExam extends Command
                     'description' => "ETS 2026 Practice Test {$testNum}",
                     'year' => 2026,
                     'status' => 'published',
-                    'duration_minutes' => 120
+                    'duration_minutes' => 120,
                 ]
             );
 
@@ -92,8 +94,9 @@ class ImportToeicExam extends Command
             // 2. Fetch Parts mapped by part_number
             $parts = Part::all()->keyBy('part_number');
             if ($parts->isEmpty()) {
-                $this->error("No parts found in the database. Please run database seeders first.");
+                $this->error('No parts found in the database. Please run database seeders first.');
                 DB::rollBack();
+
                 return Command::FAILURE;
             }
 
@@ -106,15 +109,16 @@ class ImportToeicExam extends Command
                 $partNum = $groupData['part'];
                 $part = $parts->get($partNum);
 
-                if (!$part) {
+                if (! $part) {
                     $this->error("Part {$partNum} not found in the database.");
                     DB::rollBack();
+
                     return Command::FAILURE;
                 }
 
                 // Copy Audio File if it exists
                 $dbAudioPath = null;
-                if (!empty($groupData['audio_file'])) {
+                if (! empty($groupData['audio_file'])) {
                     $audioFileName = basename($groupData['audio_file']);
                     $srcAudioPath = "{$sourceAudioDir}/{$audioFileName}";
                     if (File::exists($srcAudioPath)) {
@@ -127,7 +131,7 @@ class ImportToeicExam extends Command
 
                 // Copy Image File if it exists
                 $dbImagePath = null;
-                if (!empty($groupData['image_file'])) {
+                if (! empty($groupData['image_file'])) {
                     $imageFileName = basename($groupData['image_file']);
                     $srcImagePath = "{$sourceAssetsDir}/{$imageFileName}";
                     if (File::exists($srcImagePath)) {
@@ -173,12 +177,14 @@ class ImportToeicExam extends Command
 
             DB::commit();
             $this->info("Successfully imported ETS 2026 Test {$testNum}!");
+
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error("Error occurred: " . $e->getMessage());
+            $this->error('Error occurred: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return Command::FAILURE;
         }
     }
@@ -196,8 +202,8 @@ class ImportToeicExam extends Command
         $grouped = [];
 
         foreach ($questions as $q) {
-            $part = (int)$q['part'];
-            $qNum = (int)$q['number'];
+            $part = (int) $q['part'];
+            $qNum = (int) $q['number'];
 
             $groupKey = null;
             $audioFile = $q['audio_path'] ?? null;
@@ -214,8 +220,8 @@ class ImportToeicExam extends Command
                 $groupKey = "part2_{$qNum}";
             } elseif ($part === 3 || $part === 4) {
                 // Part 3 & 4: Grouped by audio file.
-                if (!empty($audioFile)) {
-                    $groupKey = "part34_" . md5(basename($audioFile));
+                if (! empty($audioFile)) {
+                    $groupKey = 'part34_'.md5(basename($audioFile));
                 } else {
                     $groupKey = "part34_manual_{$qNum}";
                 }
@@ -238,7 +244,7 @@ class ImportToeicExam extends Command
                 $groupKey = "part5_{$qNum}";
             } elseif ($part === 6) {
                 // Part 6: Grouped by ranges (131-134, 135-138, 139-142, 143-146)
-                $start = 131 + (int)(($qNum - 131) / 4) * 4;
+                $start = 131 + (int) (($qNum - 131) / 4) * 4;
                 $end = $start + 3;
                 $groupKey = "part6_{$start}_{$end}";
                 // Check for image
@@ -251,7 +257,7 @@ class ImportToeicExam extends Command
                 $ranges = [
                     [147, 148], [149, 150], [151, 152], [153, 154], [155, 157],
                     [158, 160], [161, 163], [164, 167], [168, 171], [172, 175],
-                    [176, 180], [181, 185], [186, 190], [191, 195], [196, 200]
+                    [176, 180], [181, 185], [186, 190], [191, 195], [196, 200],
                 ];
 
                 $start = null;
@@ -279,7 +285,7 @@ class ImportToeicExam extends Command
                 }
             }
 
-            if (!isset($grouped[$groupKey])) {
+            if (! isset($grouped[$groupKey])) {
                 $grouped[$groupKey] = [
                     'part' => $part,
                     'audio_file' => $audioFile,
@@ -290,7 +296,7 @@ class ImportToeicExam extends Command
             }
 
             // If we found an image for graphic questions in Part 3/4, attach it to the group
-            if (!empty($imageFile) && empty($grouped[$groupKey]['image_file'])) {
+            if (! empty($imageFile) && empty($grouped[$groupKey]['image_file'])) {
                 $grouped[$groupKey]['image_file'] = $imageFile;
             }
 

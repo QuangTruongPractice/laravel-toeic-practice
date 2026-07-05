@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedInteger('time_spent_seconds')->default(0);
             $table->json('parts_attempted')->nullable();                     // Practice mode: [1,3,5]
             $table->enum('status', ['in_progress', 'completed', 'abandoned'])
-                  ->default('in_progress');
+                ->default('in_progress');
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();

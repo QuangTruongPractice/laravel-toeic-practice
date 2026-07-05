@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Part;
 use App\Models\Question;
-use App\Models\Answer;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 class PracticeController extends Controller
 {
@@ -16,6 +14,7 @@ class PracticeController extends Controller
     public function index()
     {
         $parts = Part::orderBy('part_number')->get();
+
         return view('practice.index', compact('parts'));
     }
 
@@ -41,7 +40,7 @@ class PracticeController extends Controller
 
         if ($questions->isEmpty()) {
             return redirect()->route('practice.index')
-                ->with('error', 'Chưa có câu hỏi nào cho Part ' . $part->part_number . '. Hãy nhờ Admin thêm đề thi!');
+                ->with('error', 'Chưa có câu hỏi nào cho Part '.$part->part_number.'. Hãy nhờ Admin thêm đề thi!');
         }
 
         // Lưu thông tin phiên luyện tập vào session
@@ -65,7 +64,7 @@ class PracticeController extends Controller
     {
         $practice = session('practice');
 
-        if (!$practice) {
+        if (! $practice) {
             return redirect()->route('practice.index')
                 ->with('error', 'Không tìm thấy phiên luyện tập. Vui lòng chọn lại Part.');
         }
@@ -84,7 +83,7 @@ class PracticeController extends Controller
     {
         $practice = session('practice');
 
-        if (!$practice) {
+        if (! $practice) {
             return redirect()->route('practice.index')
                 ->with('error', 'Phiên luyện tập đã hết hạn.');
         }
@@ -116,7 +115,7 @@ class PracticeController extends Controller
                 'explanation' => $question->explanation,
                 'group' => $question->questionGroup,
                 'answers' => $question->answers,
-                'selected_answer_id' => $selectedAnswerId ? (int)$selectedAnswerId : null,
+                'selected_answer_id' => $selectedAnswerId ? (int) $selectedAnswerId : null,
                 'correct_answer_id' => $correctAnswer?->id,
                 'correct_answer_label' => $correctAnswer?->label,
                 'is_correct' => $isCorrect,
@@ -150,7 +149,7 @@ class PracticeController extends Controller
     {
         $practiceResult = session('practice_result');
 
-        if (!$practiceResult) {
+        if (! $practiceResult) {
             return redirect()->route('practice.index')
                 ->with('error', 'Không tìm thấy kết quả. Vui lòng làm bài lại.');
         }

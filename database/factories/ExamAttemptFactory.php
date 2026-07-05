@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ExamAttempt;
 use App\Models\Exam;
+use App\Models\ExamAttempt;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Import;
 use App\Jobs\ImportExamJob;
+use App\Models\Import;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class ImportController extends Controller
 {
     public function index()
     {
         $imports = Import::with(['admin', 'exam'])->latest()->paginate(10);
+
         return view('admin.imports.index', compact('imports'));
     }
 
@@ -52,15 +53,15 @@ class ImportController extends Controller
         $listeningPdf->move($tempDir, 'listening.pdf');
         $readingPdf->move($tempDir, 'reading.pdf');
 
-        $fullListeningPath = $tempDir . DIRECTORY_SEPARATOR . 'listening.pdf';
-        $fullReadingPath = $tempDir . DIRECTORY_SEPARATOR . 'reading.pdf';
+        $fullListeningPath = $tempDir.DIRECTORY_SEPARATOR.'listening.pdf';
+        $fullReadingPath = $tempDir.DIRECTORY_SEPARATOR.'reading.pdf';
 
         // Create the Import record
         $import = Import::create([
             'admin_id' => auth()->id(),
             'status' => 'pending',
             'pdf_path' => "temp/{$uniqueId}/listening.pdf",
-            'audio_path' => $audioZip->getClientOriginalName()
+            'audio_path' => $audioZip->getClientOriginalName(),
         ]);
 
         try {
@@ -71,12 +72,12 @@ class ImportController extends Controller
             File::ensureDirectoryExists($imageExtractDir);
 
             // Extract Audio
-            $zip = new \ZipArchive();
+            $zip = new \ZipArchive;
             $openResult = $zip->open($audioZip->path());
             if ($openResult !== true) {
                 throw new \Exception("Không thể mở tệp zip Audio (mã lỗi ZipArchive: {$openResult}).");
             }
-            if (!$zip->extractTo($audioExtractDir)) {
+            if (! $zip->extractTo($audioExtractDir)) {
                 $zip->close();
                 throw new \Exception("Giải nén tệp zip Audio thất bại. Kiểm tra quyền ghi thư mục hoặc cấu trúc file zip: {$audioExtractDir}");
             }
@@ -87,12 +88,12 @@ class ImportController extends Controller
             }
 
             // Extract Images
-            $zip = new \ZipArchive();
+            $zip = new \ZipArchive;
             $openResult = $zip->open($imageZip->path());
             if ($openResult !== true) {
                 throw new \Exception("Không thể mở tệp zip Hình ảnh (mã lỗi ZipArchive: {$openResult}).");
             }
-            if (!$zip->extractTo($imageExtractDir)) {
+            if (! $zip->extractTo($imageExtractDir)) {
                 $zip->close();
                 throw new \Exception("Giải nén tệp zip Hình ảnh thất bại. Kiểm tra quyền ghi thư mục hoặc cấu trúc file zip: {$imageExtractDir}");
             }
@@ -107,16 +108,16 @@ class ImportController extends Controller
                 'listening_pdf', file_get_contents($fullListeningPath), 'listening.pdf'
             )->attach(
                 'reading_pdf', file_get_contents($fullReadingPath), 'reading.pdf'
-            )->post(env('APP_PYTHON', 'http://localhost:8080') . '/parse-exam', [
-                'test_num' => $testNum
+            )->post(env('APP_PYTHON', 'http://localhost:8080').'/parse-exam', [
+                'test_num' => $testNum,
             ]);
 
             if ($response->failed()) {
-                throw new \Exception("FastAPI parser service failed: " . $response->body());
+                throw new \Exception('FastAPI parser service failed: '.$response->body());
             }
 
             $parsedData = $response->json();
-            
+
             // Save parsed JSON to temp path
             $jsonTempPath = "{$tempDir}/parsed.json";
             File::put($jsonTempPath, json_encode($parsedData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
@@ -136,10 +137,10 @@ class ImportController extends Controller
             File::deleteDirectory($tempDir);
             $import->update([
                 'status' => 'failed',
-                'error_log' => $e->getMessage()
+                'error_log' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['error' => "Lỗi xử lý tệp nén hoặc kết nối với Python service: " . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Lỗi xử lý tệp nén hoặc kết nối với Python service: '.$e->getMessage()])->withInput();
         }
     }
 

@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
-use App\Models\UserAnswer;
 use App\Models\Question;
 use App\Models\QuestionGroup;
+use App\Models\UserAnswer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ExamController extends Controller
 {
@@ -27,10 +27,10 @@ class ExamController extends Controller
             $exams = Exam::published()
                 ->where(function ($q) use ($keyword) {
                     $q->where('title', 'LIKE', "%{$keyword}%")
-                      ->orWhere('description', 'LIKE', "%{$keyword}%")
-                      ->orWhere('slug', 'LIKE', "%{$keyword}%")
-                      ->orWhere('year', 'LIKE', "%{$keyword}%")
-                      ->orWhere('status', 'LIKE', "%{$keyword}%" );
+                        ->orWhere('description', 'LIKE', "%{$keyword}%")
+                        ->orWhere('slug', 'LIKE', "%{$keyword}%")
+                        ->orWhere('year', 'LIKE', "%{$keyword}%")
+                        ->orWhere('status', 'LIKE', "%{$keyword}%");
                 })
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -54,7 +54,7 @@ class ExamController extends Controller
     public function show(Exam $exam)
     {
         // Nếu đề thi chưa được công bố và user không phải là admin thì chặn quyền truy cập
-        if ($exam->status !== 'published' && (!Auth::user() || !Auth::user()->isAdmin())) {
+        if ($exam->status !== 'published' && (! Auth::user() || ! Auth::user()->isAdmin())) {
             abort(404, 'Đề thi chưa được công bố.');
         }
 
@@ -83,7 +83,7 @@ class ExamController extends Controller
     public function start(Exam $exam)
     {
         // Chặn user thường vào làm bài nháp (draft)
-        if ($exam->status !== 'published' && (!Auth::user() || !Auth::user()->isAdmin())) {
+        if ($exam->status !== 'published' && (! Auth::user() || ! Auth::user()->isAdmin())) {
             abort(403, 'Đề thi chưa được công bố.');
         }
 
@@ -130,7 +130,7 @@ class ExamController extends Controller
             ->where('status', 'in_progress')
             ->first();
 
-        if (!$attempt) {
+        if (! $attempt) {
             return redirect()->route('exams.show', $exam)
                 ->with('error', 'Bạn chưa bắt đầu lượt làm bài này.');
         }
@@ -163,8 +163,10 @@ class ExamController extends Controller
             $group->questions = collect($group->questions ?? [])->map(function ($question) {
                 $question = (object) $question;
                 $question->answers = collect($question->answers ?? [])->map(fn ($answer) => (object) $answer);
+
                 return $question;
             });
+
             return $group;
         });
     }
@@ -179,7 +181,7 @@ class ExamController extends Controller
             ->where('status', 'in_progress')
             ->first();
 
-        if (!$attempt) {
+        if (! $attempt) {
             return redirect()->route('exams.show', $exam)
                 ->with('error', 'Lượt thi không tồn tại hoặc đã nộp.');
         }
@@ -202,7 +204,7 @@ class ExamController extends Controller
         foreach ($questions as $question) {
             $selectedAnswerId = $submittedAnswers[$question->id] ?? null;
             $correctAnswer = $question->answers->firstWhere('is_correct', true);
-            $isCorrect = $selectedAnswerId && $correctAnswer && ((int)$selectedAnswerId === (int)$correctAnswer->id);
+            $isCorrect = $selectedAnswerId && $correctAnswer && ((int) $selectedAnswerId === (int) $correctAnswer->id);
 
             if ($isCorrect) {
                 $totalCorrect++;
@@ -217,7 +219,7 @@ class ExamController extends Controller
             $userAnswersData[] = [
                 'attempt_id' => $attempt->id,
                 'question_id' => $question->id,
-                'selected_answer_id' => $selectedAnswerId ? (int)$selectedAnswerId : null,
+                'selected_answer_id' => $selectedAnswerId ? (int) $selectedAnswerId : null,
                 'is_correct' => $isCorrect,
             ];
         }
@@ -282,11 +284,16 @@ class ExamController extends Controller
      */
     private function calculateToeicScore($correctCount, $section)
     {
-        if ($correctCount <= 0) return 5;
-        if ($correctCount >= 100) return 495;
+        if ($correctCount <= 0) {
+            return 5;
+        }
+        if ($correctCount >= 100) {
+            return 495;
+        }
 
         // Công thức xấp xỉ tuyến tính và bo tròn về bội số của 5
         $score = 5 + ($correctCount * 4.9);
+
         return min(495, max(5, round($score / 5) * 5));
     }
 }

@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AttemptResource;
+use App\Http\Resources\ExamDetailResource;
+use App\Http\Resources\ExamResource;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\Question;
 use App\Models\UserAnswer;
-use App\Http\Resources\ExamResource;
-use App\Http\Resources\ExamDetailResource;
-use App\Http\Resources\AttemptResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ExamController extends Controller
@@ -22,6 +21,7 @@ class ExamController extends Controller
     public function index()
     {
         $exams = Exam::published()->orderBy('created_at', 'desc')->get();
+
         return ExamResource::collection($exams);
     }
 
@@ -36,7 +36,7 @@ class ExamController extends Controller
 
         $exam->load([
             'questionGroups.part',
-            'questionGroups.questions.answers'
+            'questionGroups.questions.answers',
         ]);
 
         return new ExamDetailResource($exam);
@@ -129,7 +129,7 @@ class ExamController extends Controller
         foreach ($questions as $question) {
             $selectedAnswerId = $submittedAnswers[$question->id] ?? null;
             $correctAnswer = $question->answers->firstWhere('is_correct', true);
-            $isCorrect = $selectedAnswerId && $correctAnswer && ((int)$selectedAnswerId === (int)$correctAnswer->id);
+            $isCorrect = $selectedAnswerId && $correctAnswer && ((int) $selectedAnswerId === (int) $correctAnswer->id);
 
             if ($isCorrect) {
                 $totalCorrect++;
@@ -143,7 +143,7 @@ class ExamController extends Controller
             $userAnswersData[] = [
                 'attempt_id' => $attempt->id,
                 'question_id' => $question->id,
-                'selected_answer_id' => $selectedAnswerId ? (int)$selectedAnswerId : null,
+                'selected_answer_id' => $selectedAnswerId ? (int) $selectedAnswerId : null,
                 'is_correct' => $isCorrect,
             ];
         }
@@ -183,10 +183,15 @@ class ExamController extends Controller
      */
     private function calculateToeicScore($correctCount, $section)
     {
-        if ($correctCount <= 0) return 5;
-        if ($correctCount >= 100) return 495;
+        if ($correctCount <= 0) {
+            return 5;
+        }
+        if ($correctCount >= 100) {
+            return 495;
+        }
 
         $score = 5 + ($correctCount * 4.9);
+
         return min(495, max(5, round($score / 5) * 5));
     }
 }

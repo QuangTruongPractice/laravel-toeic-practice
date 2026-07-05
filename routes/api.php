@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ExamController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,11 +27,11 @@ Route::prefix('v1')->group(function () {
     // Authenticated routes
     Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        
+
         // Exam attempts
         Route::post('/exams/{exam}/attempt', [ExamController::class, 'startAttempt']);
         Route::post('/attempts/{attempt}/submit', [ExamController::class, 'submitAttempt']);
-        
+
         // User history
         Route::get('/users/me/history', [UserController::class, 'history']);
     });

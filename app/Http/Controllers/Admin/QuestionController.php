@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Answer;
 use App\Models\Exam;
 use App\Models\Part;
-use App\Models\QuestionGroup;
 use App\Models\Question;
-use App\Models\Answer;
+use App\Models\QuestionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +20,7 @@ class QuestionController extends Controller
     public function index(Exam $exam)
     {
         $parts = Part::orderBy('part_number')->get();
-        
+
         // Lấy toàn bộ nhóm câu hỏi kèm câu hỏi và đáp án của đề thi
         $questionGroups = QuestionGroup::where('exam_id', $exam->id)
             ->with(['questions.answers'])
@@ -118,6 +118,7 @@ class QuestionController extends Controller
     {
         $questionGroup->load('questions.answers');
         $part = $questionGroup->part;
+
         return view('admin.exams.questions.edit', compact('exam', 'questionGroup', 'part'));
     }
 

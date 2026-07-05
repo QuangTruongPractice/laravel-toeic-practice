@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedSmallInteger('year')->nullable();                 // Năm xuất bản
             $table->enum('status', ['draft', 'published', 'archived'])
-                  ->default('draft');
+                ->default('draft');
             $table->unsignedInteger('duration_minutes')->default(120);        // 120 phút cho full test
             $table->timestamps();
             $table->softDeletes();

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('pdf_path')->nullable();
             $table->string('audio_path')->nullable();
             $table->enum('status', ['pending', 'processing', 'completed', 'failed'])
-                  ->default('pending');
+                ->default('pending');
             $table->text('error_log')->nullable();
             $table->unsignedInteger('questions_created')->default(0);
             $table->timestamps();

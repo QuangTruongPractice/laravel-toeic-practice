@@ -62,7 +62,7 @@ class QuestionGroup extends Model
      */
     public function hasAudio(): bool
     {
-        return !empty($this->audio_path);
+        return ! empty($this->audio_path);
     }
 
     /**
@@ -70,6 +70,6 @@ class QuestionGroup extends Model
      */
     public function hasImage(): bool
     {
-        return !empty($this->image_path);
+        return ! empty($this->image_path);
     }
 }

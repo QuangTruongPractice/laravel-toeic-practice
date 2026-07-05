@@ -82,12 +82,12 @@ class ExamAttempt extends Model
 
     public function getRemainingTimeSeconds(int $durationSeconds, ?CarbonInterface $now = null): int
     {
-        if ($this->status !== 'in_progress' || !$this->started_at) {
+        if ($this->status !== 'in_progress' || ! $this->started_at) {
             return $durationSeconds;
         }
 
         $referenceTime = $now ?? now();
-        $elapsedSeconds = max(0, $referenceTime->diffInSeconds($this->started_at));
+        $elapsedSeconds = abs($referenceTime->diffInSeconds($this->started_at));
 
         return max(0, $durationSeconds - $elapsedSeconds);
     }

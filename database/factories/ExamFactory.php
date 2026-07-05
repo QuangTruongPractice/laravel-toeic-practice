@@ -19,7 +19,7 @@ class ExamFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => Str::slug($title) . '-' . fake()->unique()->numberBetween(1, 9999),
+            'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(1, 9999),
             'description' => fake()->paragraph(),
             'year' => fake()->numberBetween(2018, 2025),
             'status' => 'published',
