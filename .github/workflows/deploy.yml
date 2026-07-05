@@ -46,7 +46,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --prefer-dist --no-dev --no-progress --no-interaction
+          composer install --prefer-dist --no-progress --no-interaction
           npm ci
 
       - name: Build frontend
@@ -56,8 +56,11 @@ jobs:
         run: php artisan test --parallel
 
       - name: Check code style
-        run: php artisan pint --test
+        run: ./vendor/bin/pint --test
         continue-on-error: true
+
+      - name: Prune dev dependencies
+        run: composer install --prefer-dist --no-dev --no-progress --no-interaction --optimize-autoloader
 
       - name: Prepare deployment files
         run: |
