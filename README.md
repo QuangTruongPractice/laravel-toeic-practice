@@ -2,6 +2,13 @@
 
 Edulys là ứng dụng web luyện thi TOEIC được xây dựng với Laravel. Người dùng có thể làm bài theo Part hoặc đề thi; quản trị viên có thể quản lý đề, câu hỏi và import đề TOEIC từ PDF, audio ZIP và image ZIP.
 
+## Bản demo đã triển khai
+
+- Ứng dụng web: [https://toeic-practice-fzcrcda7btfbfvhp.southeastasia-01.azurewebsites.net](https://toeic-practice-fzcrcda7btfbfvhp.southeastasia-01.azurewebsites.net)
+- Parser service: [https://parser-service-hdd5djdkgmdugphk.southeastasia-01.azurewebsites.net](https://parser-service-hdd5djdkgmdugphk.southeastasia-01.azurewebsites.net)
+
+Hai địa chỉ trên cũng tương ứng với các biến môi trường `APP_URL` và `APP_PYTHON` của môi trường production.
+
 ## Công nghệ
 
 - Laravel 13, PHP 8.3+
