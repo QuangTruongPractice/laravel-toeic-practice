@@ -16,6 +16,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
 
 class ImportExamJob implements ShouldQueue
 {
@@ -65,19 +67,24 @@ class ImportExamJob implements ShouldQueue
         }
 
         try {
+            Configuration::instance([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => env('CLOUDINARY_API_KEY'),
+                    'api_secret' => env('CLOUDINARY_API_SECRET'),
+                ],
+                'url' => [
+                    'secure' => true
+                ]
+            ]);
+            $uploadApi = new UploadApi();
+
             $data = json_decode(File::get($this->jsonPath), true);
             if (! $data || ! isset($data['questions'])) {
                 throw new \Exception("Invalid JSON format or missing 'questions' array.");
             }
 
             $questions = $data['questions'];
-
-            // Target storage directories
-            $targetAudioDir = storage_path("app/public/audios/test_{$this->testNum}");
-            $targetImageDir = storage_path("app/public/images/test_{$this->testNum}");
-
-            File::ensureDirectoryExists($targetAudioDir);
-            File::ensureDirectoryExists($targetImageDir);
 
             DB::beginTransaction();
 
@@ -117,27 +124,33 @@ class ImportExamJob implements ShouldQueue
                     throw new \Exception("Part {$partNum} not found in the database.");
                 }
 
-                // Copy Audio File if it exists
+                // Upload Audio File if it exists
                 $dbAudioPath = null;
                 if (! empty($groupData['audio_file'])) {
                     $audioFileName = basename($groupData['audio_file']);
                     $srcAudioPath = $this->findFileRecursive($this->audioSourceDir, $audioFileName);
                     if ($srcAudioPath && File::exists($srcAudioPath)) {
-                        File::copy($srcAudioPath, "{$targetAudioDir}/{$audioFileName}");
-                        $dbAudioPath = "audios/test_{$this->testNum}/{$audioFileName}";
+                        $uploaded = $uploadApi->upload($srcAudioPath, [
+                            'folder' => "toeic/test_{$this->testNum}/audios",
+                            'resource_type' => 'video'
+                        ]);
+                        $dbAudioPath = $uploaded['secure_url'];
                     } else {
                         $missingAudios[] = $audioFileName;
                     }
                 }
 
-                // Copy Image File if it exists
+                // Upload Image File if it exists
                 $dbImagePath = null;
                 if (! empty($groupData['image_file'])) {
                     $imageFileName = basename($groupData['image_file']);
                     $srcImagePath = $this->findFileRecursive($this->imageSourceDir, $imageFileName);
                     if ($srcImagePath && File::exists($srcImagePath)) {
-                        File::copy($srcImagePath, "{$targetImageDir}/{$imageFileName}");
-                        $dbImagePath = "images/test_{$this->testNum}/{$imageFileName}";
+                        $uploaded = $uploadApi->upload($srcImagePath, [
+                            'folder' => "toeic/test_{$this->testNum}/images",
+                            'resource_type' => 'image'
+                        ]);
+                        $dbImagePath = $uploaded['secure_url'];
                     } else {
                         $missingImages[] = $imageFileName;
                     }

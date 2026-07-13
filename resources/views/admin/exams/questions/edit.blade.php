@@ -25,9 +25,9 @@
                             @if($part->part_number >= 1 && $part->part_number <= 4)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Tệp âm thanh (Audio - Part 1-4)</label>
-                                    @if($questionGroup->audio_path)
+                                    @if($questionGroup->audio_url)
                                         <div class="mt-1 mb-2 text-sm text-gray-600 flex items-center space-x-2">
-                                            <span>🔊 Hiện tại: <a href="{{ Storage::url($questionGroup->audio_path) }}" target="_blank" class="text-indigo-600 hover:underline">Nghe thử</a></span>
+                                            <span>🔊 Hiện tại: <a href="{{ $questionGroup->audio_url }}" target="_blank" class="text-indigo-600 hover:underline">Nghe thử</a></span>
                                         </div>
                                     @endif
                                     <input type="file" name="audio" accept="audio/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100">
@@ -37,9 +37,9 @@
                             @if($part->part_number == 1)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Hình ảnh (Image - Part 1)</label>
-                                    @if($questionGroup->image_path)
+                                    @if($questionGroup->image_url)
                                         <div class="mt-1 mb-2 text-sm text-gray-600">
-                                            <img src="{{ Storage::url($questionGroup->image_path) }}" alt="Preview image" class="h-20 object-contain rounded border">
+                                            <img src="{{ $questionGroup->image_url }}" alt="Preview image" class="h-20 object-contain rounded border">
                                         </div>
                                     @endif
                                     <input type="file" name="image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100">

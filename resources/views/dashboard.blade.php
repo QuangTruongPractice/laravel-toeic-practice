@@ -228,7 +228,7 @@
                                 @foreach($recentAttempts as $attempt)
                                     <tr>
                                         <td class="py-4 font-semibold text-gray-900">
-                                            {{ $attempt->exam->title ?? 'N/A' }}
+                                            {{ $attempt->exam_title ?? 'N/A' }}
                                             <span class="ml-1.5 px-2 py-0.5 text-[10px] rounded-full font-bold {{ $attempt->status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">
                                                 {{ $attempt->status === 'completed' ? 'Đã hoàn thành' : 'Đang làm' }}
                                             </span>

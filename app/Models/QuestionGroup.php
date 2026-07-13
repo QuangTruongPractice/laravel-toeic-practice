@@ -25,6 +25,22 @@ class QuestionGroup extends Model
         'order_number' => 'integer',
     ];
 
+    protected $appends = [
+        'audio_url',
+        'image_url',
+    ];
+
+    public function getAudioUrlAttribute(): ?string
+    {
+        return $this->audio_path;
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path;
+    }
+
+
     /**
      * Đề thi chứa nhóm câu hỏi này
      */

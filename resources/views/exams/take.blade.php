@@ -29,7 +29,7 @@
                 
                 <div class="flex flex-col lg:flex-row gap-6 relative">
                     <!-- Left: Questions (Slide show mode by Group) -->
-                    <div class="w-full lg:w-3/4 space-y-6">
+                    <div id="left-panel" class="w-full lg:w-3/4 transition-all duration-300 space-y-6">
                         <!-- Dynamic Part Header -->
                         <div class="bg-indigo-50 p-4 rounded-lg shadow-sm border border-indigo-150">
                             <h3 class="text-md font-bold text-indigo-900">
@@ -68,8 +68,8 @@
                                         
                                         <!-- Left Column: Image (if present, else empty spacing) -->
                                         <div class="flex justify-center items-start min-h-[100px] border border-dashed border-gray-200 rounded-lg p-2 bg-gray-50/50">
-                                            @if($group->image_path)
-                                                <img src="{{ Storage::url($group->image_path) }}" alt="Hình ảnh câu hỏi" class="w-full rounded-lg border shadow-sm max-h-[400px] object-contain">
+                                            @if($group->image_url)
+                                                <img src="{{ $group->image_url }}" alt="Hình ảnh câu hỏi" class="w-full rounded-lg border shadow-sm max-h-[400px] object-contain">
                                             @else
                                                 <span class="text-xs text-gray-400 self-center">Không có hình ảnh</span>
                                             @endif
@@ -78,9 +78,9 @@
                                         <!-- Right Column: Audio (hidden), Passage, and Question(s) -->
                                         <div class="space-y-4">
                                             <!-- Hidden Audio player for sequential auto-play -->
-                                            @if($group->audio_path)
+                                            @if($group->audio_url)
                                                 <audio id="audio-slide-{{ $groupSeq }}" class="slide-audio" data-group-seq="{{ $groupSeq }}" style="display: none;">
-                                                    <source src="{{ Storage::url($group->audio_path) }}" type="audio/mpeg">
+                                                    <source src="{{ $group->audio_url }}" type="audio/mpeg">
                                                 </audio>
                                             @endif
 
@@ -162,8 +162,8 @@
                         </div>
                     </div>
 
-                    <!-- Right: Navigation Panel (Hidden by default, toggleable) -->
-                    <div id="nav-panel" class="w-full lg:w-1/4 hidden transition-all duration-300">
+                    <!-- Right: Navigation Panel (Shown by default, toggleable) -->
+                    <div id="nav-panel" class="w-full lg:w-1/4 transition-all duration-300">
                         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-6 max-h-[calc(100vh-8rem)] flex flex-col">
                             <h3 class="font-bold text-gray-900 text-md mb-3 pb-2 border-b">Bản đồ câu hỏi</h3>
                             
@@ -477,10 +477,15 @@
 
         function toggleNavPanel() {
             const panel = document.getElementById('nav-panel');
+            const leftPanel = document.getElementById('left-panel');
             if (panel.classList.contains('hidden')) {
                 panel.classList.remove('hidden');
+                leftPanel.classList.remove('w-full');
+                leftPanel.classList.add('lg:w-3/4');
             } else {
                 panel.classList.add('hidden');
+                leftPanel.classList.remove('lg:w-3/4');
+                leftPanel.classList.add('w-full');
             }
         }
 

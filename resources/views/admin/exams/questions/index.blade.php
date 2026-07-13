@@ -48,13 +48,13 @@
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">
                                                     Nhóm #{{ $group->order_number }}
                                                 </span>
-                                                @if($group->audio_path)
+                                                @if($group->audio_url)
                                                     <audio controls class="mt-2 h-8 w-full max-w-md">
-                                                        <source src="{{ Storage::url($group->audio_path) }}" type="audio/mpeg">
+                                                        <source src="{{ $group->audio_url }}" type="audio/mpeg">
                                                     </audio>
                                                 @endif
-                                                @if($group->image_path)
-                                                    <img src="{{ Storage::url($group->image_path) }}" alt="Image" class="mt-2 w-64">
+                                                @if($group->image_url)
+                                                    <img src="{{ $group->image_url }}" alt="Image" class="mt-2 w-64">
                                                 @endif
                                                 @if($group->passage)
                                                     <div class="text-xs text-gray-600 line-clamp-1 italic">📄 Passage: "{{ Str::limit($group->passage, 60) }}"</div>

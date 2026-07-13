@@ -19,8 +19,8 @@ class QuestionGroupResource extends JsonResource
             'part_number' => $this->part->part_number ?? null,
             'part_name' => $this->part->name ?? null,
             'passage' => $this->passage,
-            'audio_url' => $this->audio_path ? url(Storage::url($this->audio_path)) : null,
-            'image_url' => $this->image_path ? url(Storage::url($this->image_path)) : null,
+            'audio_url' => $this->audio_url,
+            'image_url' => $this->image_url,
             'questions' => QuestionResource::collection($this->whenLoaded('questions')),
         ];
     }

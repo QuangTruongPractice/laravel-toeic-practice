@@ -52,18 +52,18 @@
                         </div>
 
                         <!-- Audio -->
-                        @if($result['group'] && $result['group']['audio_path'])
+                        @if($result['group'] && $result['group']['audio_url'])
                             <div class="mb-3">
                                 <audio controls class="w-full h-10">
-                                    <source src="{{ Storage::url($result['group']['audio_path']) }}" type="audio/mpeg">
+                                    <source src="{{ $result['group']['audio_url'] }}" type="audio/mpeg">
                                 </audio>
                             </div>
                         @endif
 
                         <!-- Image -->
-                        @if($result['group'] && $result['group']['image_path'])
+                        @if($result['group'] && $result['group']['image_url'])
                             <div class="mb-3">
-                                <img src="{{ Storage::url($result['group']['image_path']) }}" alt="Question image" class="max-w-sm rounded-lg border">
+                                <img src="{{ $result['group']['image_url'] }}" alt="Question image" class="max-w-sm rounded-lg border">
                             </div>
                         @endif
 
