@@ -20,20 +20,20 @@ class QuestionGroupFactory extends Factory
         $part = Part::firstOrCreate(
             ['part_number' => 1],
             [
-                'name'           => 'Photographs',
-                'section'        => 'listening',
-                'directions'     => 'Describe the picture.',
-                'description'    => 'Photographs',
+                'name' => 'Photographs',
+                'section' => 'listening',
+                'directions' => 'Describe the picture.',
+                'description' => 'Photographs',
                 'question_count' => 6,
             ]
         );
 
         return [
-            'exam_id'      => Exam::factory(),
-            'part_id'      => $part->id,
-            'passage'      => null,
-            'audio_path'   => null,
-            'image_path'   => null,
+            'exam_id' => Exam::factory(),
+            'part_id' => $part->id,
+            'passage' => null,
+            'audio_path' => null,
+            'image_path' => null,
             'order_number' => fake()->numberBetween(1, 50),
         ];
     }

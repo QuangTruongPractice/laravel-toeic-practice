@@ -40,7 +40,6 @@ class QuestionGroup extends Model
         return $this->image_path;
     }
 
-
     /**
      * Đề thi chứa nhóm câu hỏi này
      */

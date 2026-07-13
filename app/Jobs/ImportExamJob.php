@@ -8,6 +8,8 @@ use App\Models\Import;
 use App\Models\Part;
 use App\Models\Question;
 use App\Models\QuestionGroup;
+use Cloudinary\Api\Upload\UploadApi;
+use Cloudinary\Configuration\Configuration;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,8 +18,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Cloudinary\Configuration\Configuration;
-use Cloudinary\Api\Upload\UploadApi;
 
 class ImportExamJob implements ShouldQueue
 {
@@ -70,14 +70,14 @@ class ImportExamJob implements ShouldQueue
             Configuration::instance([
                 'cloud' => [
                     'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                    'api_key'    => env('CLOUDINARY_API_KEY'),
+                    'api_key' => env('CLOUDINARY_API_KEY'),
                     'api_secret' => env('CLOUDINARY_API_SECRET'),
                 ],
                 'url' => [
-                    'secure' => true
-                ]
+                    'secure' => true,
+                ],
             ]);
-            $uploadApi = new UploadApi();
+            $uploadApi = new UploadApi;
 
             $data = json_decode(File::get($this->jsonPath), true);
             if (! $data || ! isset($data['questions'])) {
@@ -132,7 +132,7 @@ class ImportExamJob implements ShouldQueue
                     if ($srcAudioPath && File::exists($srcAudioPath)) {
                         $uploaded = $uploadApi->upload($srcAudioPath, [
                             'folder' => "toeic/test_{$this->testNum}/audios",
-                            'resource_type' => 'video'
+                            'resource_type' => 'video',
                         ]);
                         $dbAudioPath = $uploaded['secure_url'];
                     } else {
@@ -148,7 +148,7 @@ class ImportExamJob implements ShouldQueue
                     if ($srcImagePath && File::exists($srcImagePath)) {
                         $uploaded = $uploadApi->upload($srcImagePath, [
                             'folder' => "toeic/test_{$this->testNum}/images",
-                            'resource_type' => 'image'
+                            'resource_type' => 'image',
                         ]);
                         $dbImagePath = $uploaded['secure_url'];
                     } else {
